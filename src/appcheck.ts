@@ -290,12 +290,12 @@ export async function getAppUpgrades(): Promise<updateInfo> {
   // @ts-expect-error TypeScript doesn't understand this
   const availableUpdates: AvailableUpdate[] = data.filter((version) =>
     // @ts-expect-error TypeScript doesn't understand this
-    version.success && version.current !== version.umbrel
+    version.success && version.current && version.current !== version.umbrel
   );
   // @ts-expect-error TypeScript doesn't understand this
   const upToDate: UpToDate[] = data.filter((version) =>
     // @ts-expect-error TypeScript doesn't understand this
-    version.success && version.current === version.umbrel
+    version.success && !version.current
   );
   // @ts-expect-error TypeScript doesn't understand this
   const failed: FailedUpdate[] = data.filter((version) => !version.success);
