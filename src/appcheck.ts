@@ -1,15 +1,9 @@
 
 import * as semver from "https://deno.land/x/semver@v1.4.1/mod.ts";
 import { Octokit } from "https://esm.sh/@octokit/rest@19.0.4";
-import { marked } from "https://esm.sh/marked@4.0.18";
-import marked_terminal from "https://esm.sh/marked-terminal@5.1.1";
 import checkHomeAssistant from "./special-apps/homeAssistant.ts";
 import YAML from "./yaml-tools.ts";
 import { UmbrelApp } from "./appYml.ts";
-
-marked.setOptions({
-  renderer: new marked_terminal(),
-});
 
 // Check if a semver is valid
 function isValidSemver(version: string): boolean {
