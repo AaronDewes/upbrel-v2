@@ -1,4 +1,4 @@
-import { Octokit } from "https://esm.sh/@octokit/rest@19.0.4";
+import { Octokit } from "https://cdn.skypack.dev/octokit?dts";
 
 interface VersionDiff {
   app: string;

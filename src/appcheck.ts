@@ -1,6 +1,6 @@
 
 import * as semver from "https://deno.land/x/semver@v1.4.1/mod.ts";
-import { Octokit } from "https://esm.sh/@octokit/rest@19.0.4";
+import { Octokit } from "https://cdn.skypack.dev/octokit?dts";
 import checkHomeAssistant from "./special-apps/homeAssistant.ts";
 import * as YAML from "https://deno.land/std@0.152.0/encoding/yaml.ts";
 import { UmbrelApp } from "./appYml.ts";
@@ -54,7 +54,7 @@ function getOwnerAndRepo(repository: string): {
 
 async function checkCommits(
   repository: string,
-  octokit: InstanceType<typeof Octokit>
+  octokit: Octokit
 ): Promise<string> {
   const { owner, repo } = getOwnerAndRepo(repository);
 
