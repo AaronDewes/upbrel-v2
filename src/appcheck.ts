@@ -242,11 +242,26 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<V
   };
 }
 
-export async function getAppUpgrades(): Promise<({
-  app: string;
-  id: string;
-  success: boolean;
-} | VersionDiff)[]> {
+type updateInfo = {
+	availableUpdates: {
+	  app: string;
+	  id: string;
+	  umbrel: string;
+	  current: string;
+	}[];
+	upToDate: {
+	  app: string;
+	  id: string;
+	  umbrel: string;
+	}[];
+	failed: {
+	  app: string;
+	  id: string;
+	  umbrel: string;
+	}[];
+};
+
+export async function getAppUpgrades(): Promise<updateInfo> {
   const octokitOptions = Deno.env.get("GITHUB_TOKEN")
     ? {
       auth: Deno.env.get("GITHUB_TOKEN"),
@@ -269,5 +284,9 @@ export async function getAppUpgrades(): Promise<({
     }
     promises.push(getUpdatesForApp(appDir.name, octokit));
   }
-  return await Promise.all(promises);
+  const data = await Promise.all(promises);
+  const availableUpdates = data.filter((version) => version.current !== version.umbrel && version.success);
+  const upToDate = data.filter((version) => version.current === version.umbrel && version.success);
+  const failed = data.filter((version) => !version.success);
+  return { availableUpdates, upToDate, failed };
 }
