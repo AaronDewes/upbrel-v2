@@ -121,6 +121,13 @@ const overwriteRepos: Record<string, {
     owner: "lightningnetwork",
     repo: "lnd",
   },
+  "core-lightning": {
+    owner: "ElementsProject",
+    repo: "lightning",
+  },
+};
+const overwriteLatestVersions: Record<string, string> = {
+  "snowflake": "2.3.0",
 };
 
 async function getUpdatesForApp(
@@ -144,7 +151,8 @@ async function getUpdatesForApp(
   } else {
     if (
       typeof app.repo !== "string" ||
-      !app.repo?.startsWith("https://github.com/")
+      !app.repo?.startsWith("https://github.com/") &&
+        !overwriteLatestVersions[appName]
     ) {
       return {
         id: app.id,
@@ -156,7 +164,7 @@ async function getUpdatesForApp(
     }
     repo = getOwnerAndRepo(app.repo as string);
   }
-  if (!repo.repo || !repo.owner) {
+  if (!overwriteLatestVersions[appName] && !repo.repo || !repo.owner) {
     return {
       id: app.id,
       app: app.name,
@@ -200,6 +208,26 @@ async function getUpdatesForApp(
     if (homeAssistantVersion) {
       return { ...homeAssistantVersion, id: appName, success: true };
     }
+  } else if (appName === "woofbot") {
+    const res = await fetch(
+      "https://raw.githubusercontent.com/woofbotapp/woofbotapp/master/package.json",
+    );
+    const packageJson = await res.json();
+    const latestVersion: string = packageJson.version;
+    if (
+      semver.gt(
+        latestVersion.replace("v", ""),
+        app.version.replace("v", ""),
+      )
+    ) {
+      return {
+        umbrel: appVersion.replace("v", ""),
+        current: latestVersion.replace("v", ""),
+        app: app.name,
+        id: appName,
+        success: true,
+      };
+    }
   } else {
     if (!semver.valid(app.version)) {
       return {
@@ -210,17 +238,26 @@ async function getUpdatesForApp(
         success: false,
       };
     }
-    const tagList = await octokit.rest.repos.listTags({
-      ...repo,
-    });
+    const tagList = overwriteLatestVersions[appName]
+      ? { data: [] }
+      : await octokit.rest.repos.listTags({
+        ...repo,
+      });
     // Remove all tags which aren't semver compatible or, then sort them by semver
     // Also remove all tags that contain a "-" and then letters at the end.
     const sortedTags = tagList.data
       .filter((tag: { name: string }) => {
+        if (appName === "lightning") {
+          return !tag.name.includes("rc");
+        }
         return appsInBeta.includes(appName) || !isPrerelease(tag.name);
       })
       .filter((tag: { name: string }) => {
         return isValidSemver(tag.name);
+      })
+      .filter((tag: { name: string }) => {
+        // Tag only used for testing
+        return !(app.id === "core-lightning" && tag.name === "v0.99.1")
       })
       .sort((a: { name: string }, b: { name: string }) => {
         return semver.compare(
@@ -228,7 +265,7 @@ async function getUpdatesForApp(
           b.name.replace("v", ""),
         );
       });
-    if (sortedTags.length == 0) {
+    if (!overwriteLatestVersions[appName] && sortedTags.length == 0) {
       return {
         id: app.id,
         app: app.name,
@@ -240,13 +277,15 @@ async function getUpdatesForApp(
     // Now compare the tag with the highest semver against the currently used version
     if (
       semver.gt(
-        sortedTags[sortedTags.length - 1].name.replace("v", ""),
+        overwriteLatestVersions[appName] ||
+          sortedTags[sortedTags.length - 1].name.replace("v", ""),
         app.version.replace("v", ""),
       )
     ) {
       return {
         umbrel: appVersion.replace("v", ""),
-        current: sortedTags[sortedTags.length - 1].name.replace("v", ""),
+        current: overwriteLatestVersions[appName] ||
+          sortedTags[sortedTags.length - 1].name.replace("v", ""),
         app: app.name,
         id: appName,
         success: true,
