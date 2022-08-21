@@ -59,7 +59,7 @@ async function checkCommits(
   const { owner, repo } = getOwnerAndRepo(repository);
 
   // Get the repos default branch
-  const repoInfo = await octokit.repos.get({
+  const repoInfo = await octokit.rest.repos.get({
     owner,
     repo,
   });
