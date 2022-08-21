@@ -2,7 +2,7 @@
 import * as semver from "https://deno.land/x/semver@v1.4.1/mod.ts";
 import { Octokit } from "https://esm.sh/@octokit/rest@19.0.4";
 import checkHomeAssistant from "./special-apps/homeAssistant.ts";
-import YAML from "./yaml-tools.ts";
+import * as YAML from "https://deno.land/std@0.152.0/encoding/yaml.ts";
 import { UmbrelApp } from "./appYml.ts";
 
 // Check if a semver is valid
@@ -115,10 +115,9 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<{
 } | VersionDiff> {
   const appName = appDirName;
   const response = await fetch(`https://raw.githubusercontent.com/getumbrel/umbrel-apps/master/${appName}/umbrel-app.yml`);
-  const appYmlData = YAML.parse(
+  const app = YAML.parse(
     await response.text(),
-  ) as YAML & { yaml: UmbrelApp };
-  const app = appYmlData.yaml;
+  ) as UmbrelApp;
   if (typeof app.repo !== "string" || !app.repo?.startsWith("https://github.com/")) {
     return {
       id: app.id,
