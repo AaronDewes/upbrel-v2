@@ -3,6 +3,8 @@ import { getAppUpgrades } from "./appcheck.ts";
 import { config } from "https://deno.land/x/dotenv@v3.2.0/mod.ts";
 config();
 
-serve(async (req: Request) => new Response(
-    JSON.stringify(await getAppUpgrades())
+serve(async (_req: Request) => new Response(
+    JSON.stringify(await getAppUpgrades()), {
+    headers: { "content-type": "application/json" },
+}
 ));
