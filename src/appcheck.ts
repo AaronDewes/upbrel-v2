@@ -100,28 +100,27 @@ type ContentTree = {
 interface VersionDiff {
   app: string;
   id: string;
-  citadel: string;
+  umbrel: string;
   current: string;
-  success: true;
+  success: boolean;
 }
 
 // IDs of apps which don't have releases which aren't prerelease
 const appsInBeta: string[] = ["lightning-terminal"];
 
-async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<{
-  app: string;
-  id: string;
-  success: boolean;
-} | VersionDiff> {
+async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<VersionDiff> {
   const appName = appDirName;
   const response = await fetch(`https://raw.githubusercontent.com/getumbrel/umbrel-apps/master/${appName}/umbrel-app.yml`);
   const app = YAML.parse(
     await response.text(),
   ) as UmbrelApp;
+  const appVersion = app.version;
   if (typeof app.repo !== "string" || !app.repo?.startsWith("https://github.com/")) {
     return {
       id: app.id,
       app: app.name,
+      current: "unknown",
+      umbrel: appVersion.replace("v", ""),
       success: false,
     };
   }
@@ -130,15 +129,16 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<{
     return {
       id: app.id,
       app: app.name,
+      current: "unknown",
+      umbrel: appVersion.replace("v", ""),
       success: false,
     };
   }
-  const appVersion = app.version;
   if (appName === "lnbits") {
     const currentCommit = await checkCommits(app.repo as string, octokit);
     if (currentCommit !== app.version) {
       return {
-        citadel: appVersion,
+        umbrel: appVersion,
         current: currentCommit,
         app: app.name,
         id: appName,
@@ -161,7 +161,7 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<{
     const highestNum = parseInt(sortedTags[sortedTags.length - 1].name);
     if (highestNum > parseInt(appVersion)) {
       return {
-        citadel: appVersion,
+        umbrel: appVersion,
         current: sortedTags[sortedTags.length - 1].name,
         app: app.name,
         id: appName,
@@ -184,6 +184,8 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<{
       return {
         id: app.id,
         app: app.name,
+        umbrel: appVersion.replace("v", ""),
+        current: "unknown",
         success: false,
       };
     }
@@ -210,6 +212,8 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<{
       return {
         id: app.id,
         app: app.name,
+        umbrel: appVersion.replace("v", ""),
+        current: "unknown",
         success: false,
       };
     }
@@ -221,7 +225,7 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<{
       )
     ) {
       return {
-        citadel: appVersion.replace("v", ""),
+        umbrel: appVersion.replace("v", ""),
         current: sortedTags[sortedTags.length - 1].name.replace("v", ""),
         app: app.name,
         id: appName,
@@ -233,6 +237,8 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<{
     id: app.id,
     app: app.name,
     success: true,
+    umbrel: appVersion.replace("v", ""),
+    current: appVersion.replace("v", ""),
   };
 }
 

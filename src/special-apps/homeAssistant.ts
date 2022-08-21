@@ -2,7 +2,7 @@ import { Octokit } from "https://cdn.skypack.dev/octokit?dts";
 
 interface VersionDiff {
   app: string;
-  citadel: string;
+  umbrel: string;
   current: string;
 }
 
@@ -60,7 +60,7 @@ export default async function checkHomeAssistant(
       highestNum3 > currentNum3)
   ) {
     return {
-      citadel: appVersion,
+      umbrel: appVersion,
       current: sortedTags[sortedTags.length - 1].name,
       app: appName,
     };
