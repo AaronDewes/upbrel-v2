@@ -9,6 +9,6 @@ if (!isDenoDeploy)
 
 serve(async (_req: Request) => new Response(
     JSON.stringify(await getAppUpgrades()), {
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", "access-control-allow-origin": "*" },
 }
 ));
