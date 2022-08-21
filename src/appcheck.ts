@@ -1,15 +1,11 @@
-import fetch from "node-fetch";
-import semver from "semver";
-import { Octokit } from "@octokit/rest";
-import { marked } from "marked";
-import marked_terminal from "marked-terminal";
-import checkHomeAssistant from "./special-apps/homeAssistant.js";
-import * as fs from "fs/promises";
-import { existsSync } from "fs";
-import * as path from "path";
-import YAML from "./yaml-tools.js";
-import { AppYmlV1, AppYmlV3, getUpdateContainers, updateContainer } from "./appYml.js";
-import { TwitterApi } from 'twitter-api-v2';
+
+import * as semver from "https://deno.land/x/semver@v1.4.1/mod.ts";
+import { Octokit } from "https://esm.sh/@octokit/rest@19.0.4";
+import { marked } from "https://esm.sh/marked@4.0.18";
+import marked_terminal from "https://esm.sh/marked-terminal@5.1.1";
+import checkHomeAssistant from "./special-apps/homeAssistant.ts";
+import YAML from "./yaml-tools.ts";
+import { UmbrelApp } from "./appYml.ts";
 
 marked.setOptions({
   renderer: new marked_terminal(),
@@ -81,257 +77,198 @@ async function checkCommits(
   });
   return appRepo.data.sha.substr(0, 7);
 }
-interface SimpleApp {
-  id: string;
-  name: string;
-  version: string;
-  repo: string;
-}
 
-interface App {
-  id: string;
-  category: string;
+type ContentTree = {
+  type: string;
+  size: number;
   name: string;
-  version: string;
-  tagline: string;
-  description: string;
-  developer: string;
-  website: string;
-  dependencies: string[];
-  repo: string;
-  support: string;
-  port: number;
-  gallery: string[];
   path: string;
-  defaultPassword: string;
-  torOnly?: boolean;
-}
+  content?: string;
+  sha: string;
+  /** Format: uri */
+  url: string;
+  /** Format: uri */
+  git_url: string | null;
+  /** Format: uri */
+  html_url: string | null;
+  /** Format: uri */
+  download_url: string | null;
+  _links: {
+    /** Format: uri */
+    git: string | null;
+    /** Format: uri */
+    html: string | null;
+    /** Format: uri */
+    self: string;
+  };
+}[];
 
 interface VersionDiff {
   app: string;
   id: string;
   citadel: string;
   current: string;
+  success: true;
 }
 
 // IDs of apps which don't have releases which aren't prerelease
 const appsInBeta: string[] = ["lightning-terminal"];
 
-export async function getAppUpgrades(
-  directory: string,
-  consumerkey: undefined | string,
-  consumersecret: undefined | string,
-  accesstoken: undefined | string,
-  accesstokensecret: undefined | string
-): Promise<string> {
-  let failedApps: string[] = [];
-  const octokitOptions = process.env.GITHUB_TOKEN
-    ? {
-      auth: process.env.GITHUB_TOKEN,
+async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<{
+  app: string;
+  id: string;
+  success: boolean;
+} | VersionDiff> {
+  const appName = appDirName;
+  const response = await fetch(`https://raw.githubusercontent.com/getumbrel/umbrel-apps/master/${appName}/umbrel-app.yml`);
+  const appYmlData = YAML.parse(
+    await response.text(),
+  ) as YAML & { yaml: UmbrelApp };
+  const app = appYmlData.yaml;
+  if (typeof app.repo !== "string" || !app.repo?.startsWith("https://github.com/")) {
+    return {
+      id: app.id,
+      app: app.name,
+      success: false,
+    };
+  }
+  const { owner, repo } = getOwnerAndRepo(app.repo as string);
+  if (!repo || !owner) {
+    return {
+      id: app.id,
+      app: app.name,
+      success: false,
+    };
+  }
+  const appVersion = app.version;
+  if (appName === "lnbits") {
+    const currentCommit = await checkCommits(app.repo as string, octokit);
+    if (currentCommit !== app.version) {
+      return {
+        citadel: appVersion,
+        current: currentCommit,
+        app: app.name,
+        id: appName,
+        success: true,
+      };
     }
-    : {};
-  let twitter: TwitterApi | false = false;
-  if (consumerkey && consumersecret && accesstoken && accesstokensecret)
-    twitter = new TwitterApi({
-      appKey: consumerkey,
-      appSecret: consumersecret,
-      accessToken: accesstoken,
-      accessSecret: accesstokensecret,
+  } else if (appName === "photoprism") {
+    const tagList = await octokit.rest.repos.listTags({
+      owner,
+      repo,
     });
-  const octokit = new Octokit(octokitOptions);
-  let data: App[] | SimpleApp[] = [];
-  let apps = await fs.readdir(directory);
-  const potentialUpdates: VersionDiff[] = [];
-
-  for (const appName of apps) {
-    console.info(`Checking app ${appName}...`);
-    const appDirectory = path.join(directory, appName);
-    if (!existsSync(appDirectory)) continue;
-    const appYml = path.join(appDirectory, "app.yml");
-    if (!existsSync(appYml)) continue;
-    const appYmlData = YAML.parse(
-      await fs.readFile(appYml, "utf8")
-    ) as YAML & { yaml: AppYmlV1 | AppYmlV3 };
-    if (appYmlData.yaml.version?.toString() !== "1" && appYmlData.yaml.version?.toString() !== "2" && appYmlData.yaml.version?.toString() !== "3") continue;
-    const app = appYmlData.yaml.metadata;
-    if (typeof appYmlData.yaml.metadata.repo !== "string" || !appYmlData.yaml.metadata.repo?.startsWith("https://github.com/")) {
-      console.info("Version checking is not supported/disabled for this app.");
-      failedApps.push(app.name);
-      continue;
+    // Tags are just dates as number
+    // First, sort the tags by their number
+    const sortedTags = tagList.data.sort((a: { name: string }, b: { name: string }) => {
+      const aNum = parseInt(a.name);
+      const bNum = parseInt(b.name);
+      return aNum - bNum;
+    });
+    // Then, check if the highest number is higher than the number of the currently used version
+    const highestNum = parseInt(sortedTags[sortedTags.length - 1].name);
+    if (highestNum > parseInt(appVersion)) {
+      return {
+        citadel: appVersion,
+        current: sortedTags[sortedTags.length - 1].name,
+        app: app.name,
+        id: appName,
+        success: true
+      };
     }
-    const { owner, repo } = getOwnerAndRepo(app.repo as string);
-    if (!repo || !owner) {
-      console.info("Version checking is not supported/disabled for this app.");
-      failedApps.push(app.name);
-      continue;
+  } else if (appName === "home-assistant" || appName === "pi-hole") {
+    const homeAssistantVersion = await checkHomeAssistant(
+      octokit,
+      owner,
+      repo,
+      app.version,
+      app.name
+    );
+    if (homeAssistantVersion) {
+      return { ...homeAssistantVersion, id: appName, success: true };
     }
-    const appVersion = app.version;
-    if (appName === "lnbits") {
-      const currentCommit = await checkCommits(app.repo as string, octokit);
-      if (currentCommit !== app.version) {
-        potentialUpdates.push({
-          citadel: appVersion,
-          current: currentCommit,
-          app: app.name,
-          id: appName,
-        });
-      }
-    } else if (appName === "photoprism") {
-      const tagList = await octokit.rest.repos.listTags({
-        owner,
-        repo,
-      });
-      // Tags are just dates as number
-      // First, sort the tags by their number
-      const sortedTags = tagList.data.sort((a, b) => {
-        const aNum = parseInt(a.name);
-        const bNum = parseInt(b.name);
-        return aNum - bNum;
-      });
-      // Then, check if the highest number is higher than the number of the currently used version
-      const highestNum = parseInt(sortedTags[sortedTags.length - 1].name);
-      if (highestNum > parseInt(appVersion)) {
-        potentialUpdates.push({
-          citadel: appVersion,
-          current: sortedTags[sortedTags.length - 1].name,
-          app: app.name,
-          id: appName,
-        });
-      }
-    } else if (appName === "home-assistant" || appName === "pi-hole") {
-      const homeAssistantVersion = await checkHomeAssistant(
-        octokit,
-        owner,
-        repo,
-        app.version,
-        app.name
-      );
-      if (homeAssistantVersion) {
-        potentialUpdates.push({ ...homeAssistantVersion, id: appName });
-      }
-    } else {
-      if (!semver.valid(app.version)) {
-        console.info(`${app.name}: ${app.version} is not a valid semver.`);
-        potentialUpdates.push({
-          citadel: appVersion,
-          current: "Check failed.",
-          app: app.name,
-          id: appName,
-        });
-        continue;
-      }
-      const tagList = await octokit.rest.repos.listTags({
-        owner,
-        repo,
-      });
-      // Remove all tags which aren't semver compatible or, then sort them by semver
-      // Also remove all tags that contain a "-" and then letters at the end.
-      const sortedTags = tagList.data
-        .filter((tag) => {
-          return appsInBeta.includes(appName) || !isPrerelease(tag.name);
-        })
-        .filter((tag) => {
-          return isValidSemver(tag.name);
-        })
-        .sort((a, b) => {
-          return semver.compare(
-            a.name.replace("v", ""),
-            b.name.replace("v", "")
-          );
-        });
-      if (sortedTags.length == 0) {
-        failedApps.push(appName);
-        continue;
-      }
-      // Now compare the tag with the highest semver against the currently used version
-      if (
-        semver.gt(
-          sortedTags[sortedTags.length - 1].name.replace("v", ""),
-          app.version.replace("v", "")
-        )
-      ) {
-        potentialUpdates.push({
-          citadel: appVersion.replace("v", ""),
-          current: sortedTags[sortedTags.length - 1].name.replace("v", ""),
-          app: app.name,
-          id: appName,
-        });
-      }
+  } else {
+    if (!semver.valid(app.version)) {
+      return {
+        id: app.id,
+        app: app.name,
+        success: false,
+      };
     }
-  }
-  if (potentialUpdates == []) {
-    return "No updates were found, everything seems up-to-date.";
-  }
-  let appsDirectory = directory;
-  for (const update of potentialUpdates) {
-    const appDirectory = path.join(appsDirectory, update.id);
-    if (!existsSync(appDirectory)) {
-      console.warn(`Failed to locate app directory for ${update.id}`)
-      continue;
-    }
-    const appYml = path.join(appDirectory, "app.yml");
-    if (!existsSync(appYml)) {
-      console.warn(`Failed to locate app.yml for ${update.id}`)
-      continue;
-    }
-    const appYmlData = YAML.parse(
-      await fs.readFile(appYml, "utf8")
-    ) as YAML & { yaml: AppYmlV1 | AppYmlV3 };
-    if (appYmlData.yaml.version?.toString() !== "1" && appYmlData.yaml.version?.toString() !== "2"  && appYmlData.yaml.version?.toString() !== "3") continue;
-    console.log(`Updating ${update.app}...`);
-    let updateAbleContainers = getUpdateContainers(appYmlData.yaml);
-    let wasUpdated = true;
-    appYmlData.yaml.metadata.version = update.current;
-    for (let container of updateAbleContainers) {
-      let containerIndex = appYmlData.yaml.containers.indexOf(container as any);
-      try {
-        appYmlData.yaml.containers[containerIndex] = await updateContainer(
-          container,
-          update.id === "gitea" ? `${update.current}-rootless` : update.current
+    const tagList = await octokit.rest.repos.listTags({
+      owner,
+      repo,
+    });
+    // Remove all tags which aren't semver compatible or, then sort them by semver
+    // Also remove all tags that contain a "-" and then letters at the end.
+    const sortedTags = tagList.data
+      .filter((tag: { name: string }) => {
+        return appsInBeta.includes(appName) || !isPrerelease(tag.name);
+      })
+      .filter((tag: { name: string }) => {
+        return isValidSemver(tag.name);
+      })
+      .sort((a: { name: string }, b: { name: string }) => {
+        return semver.compare(
+          a.name.replace("v", ""),
+          b.name.replace("v", "")
         );
-      } catch (e) {
-        console.error(e);
-        appYmlData.yaml.metadata.version = update.citadel;
-        wasUpdated = false;
-      }
+      });
+    if (sortedTags.length == 0) {
+      return {
+        id: app.id,
+        app: app.name,
+        success: false,
+      };
     }
-    // Now write the new app.yml
-    await fs.writeFile(appYml, YAML.stringify(appYmlData));
-    potentialUpdates.splice(potentialUpdates.indexOf(update), 1);
-    if (wasUpdated && twitter)
-      await twitter.v1.tweet(`I just updated ${update.app} to ${update.current} on Citadel! Press the "Update apps" button on the dashboard to update.`);
-    else if (twitter)
-      await twitter.v1.tweet(`I failed to update ${update.app} to ${update.current} on Citadel! @AaronDewes Please fix this!`).catch(() => {
-        // Ignore, this happens when tweeting the same thing twice
-      });
+    // Now compare the tag with the highest semver against the currently used version
+    if (
+      semver.gt(
+        sortedTags[sortedTags.length - 1].name.replace("v", ""),
+        app.version.replace("v", "")
+      )
+    ) {
+      return {
+        citadel: appVersion.replace("v", ""),
+        current: sortedTags[sortedTags.length - 1].name.replace("v", ""),
+        app: app.name,
+        id: appName,
+        success: true,
+      };
+    }
   }
-  let table = `| app | current release | used in Citadel |\n`;
-  table += "|-----|-----------------|----------------|\n";
-  potentialUpdates.forEach((update) => {
-    if (twitter)
-      twitter.v1.tweet(`I failed to update ${update.app} to ${update.current} on Citadel! @AaronDewes Please fix this!`).catch(() => {
-        // Ignore, this happens when tweeting the same thing twice
-      });
-    table += `| ${update.app} | ${update.current} | ${update.citadel} |\n`;
-  });
-  failedApps.forEach(app => {
-    table += `| ${app} |  Couldn't check | Couldn't check |`;
-  });
-  return table;
+  return {
+    id: app.id,
+    app: app.name,
+    success: true,
+  };
 }
 
-export async function formatData(
-  outputPlain: boolean = false,
-  directory: string,
-  consumerkey: undefined | string,
-  consumersecret: undefined | string,
-  accesstoken: undefined | string,
-  accesstokensecret: undefined | string
-): Promise<string> {
-  const upgrades = await getAppUpgrades(directory, consumerkey, consumersecret, accesstoken, accesstokensecret);
-  if (outputPlain) {
-    return upgrades;
-  } else {
-    return marked(upgrades);
+export async function getAppUpgrades(): Promise<({
+  app: string;
+  id: string;
+  success: boolean;
+} | VersionDiff)[]> {
+  const octokitOptions = Deno.env.get("GITHUB_TOKEN")
+    ? {
+      auth: Deno.env.get("GITHUB_TOKEN"),
+    }
+    : {};
+  const octokit = new Octokit(octokitOptions);
+  const apps = (await octokit.rest.repos.getContent({
+    repo: "umbrel-apps",
+    owner: "getumbrel",
+    path: ""
+  })).data as ContentTree;
+  const promises: Promise<{
+    app: string;
+    id: string;
+    success: boolean;
+  } | VersionDiff>[] = [];
+  for (const appDir of apps) {
+    if (appDir.type !== "dir") {
+      continue;
+    }
+    promises.push(getUpdatesForApp(appDir.name, octokit));
   }
+  return await Promise.all(promises);
 }

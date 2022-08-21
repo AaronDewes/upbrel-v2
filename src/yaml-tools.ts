@@ -1,9 +1,9 @@
-import YAML from "yaml";
+import YAML from "https://esm.sh/yaml@2.1.1";
 
 // A utility tool which allows modifiying yaml, while keeping comments at the beginning of the file
 export default class Yaml {
     public yaml: unknown;
-    #startingComments: string = "";
+    #startingComments = "";
     
     constructor(yaml: string) {
         this.yaml = YAML.parse(yaml);

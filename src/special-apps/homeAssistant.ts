@@ -1,4 +1,4 @@
-import { Octokit } from "@octokit/rest";
+import { Octokit } from "https://esm.sh/@octokit/rest@19.0.4";
 
 interface VersionDiff {
   app: string;
@@ -21,10 +21,10 @@ export default async function checkHomeAssistant(
   // for beta releases, releaseNumber contains a b, otherwise, it's a plain number
   // First, remove beta releases from the array, then sort it by year, moth and release number
   const sortedTags = tagList.data
-    .filter((tag) => {
+    .filter((tag: {name: string}) => {
       return !tag.name.includes("b");
     })
-    .sort((a, b) => {
+    .sort((a: {name: string}, b: {name: string}) => {
       const aNum = parseInt(a.name.split(".")[0]);
       const bNum = parseInt(b.name.split(".")[0]);
       if (aNum !== bNum) {
