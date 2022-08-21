@@ -23,7 +23,6 @@ serve(async (_req: Request) => {
     if (!cached) {
       throw new Error("No cache");
     }
-    console.log("Cache found!");
 
     return new Response(
       cached,
@@ -35,9 +34,10 @@ serve(async (_req: Request) => {
       },
     );
   } catch {
-    console.log("No cache!");
     const result = JSON.stringify(await getAppUpgrades());
-    await cache.set("available_updates", result);
+    await cache.set("available_updates", result, {
+        ex: 60 * 5
+    });
     return new Response(
       result,
       {
