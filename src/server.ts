@@ -4,7 +4,7 @@ import { config } from "https://deno.land/x/dotenv@v3.2.0/mod.ts";
 
 const isDenoDeploy = Deno.env.get("DENO_DEPLOYMENT_ID") !== undefined;
 
-if (isDenoDeploy)
+if (!isDenoDeploy)
     config();
 
 serve(async (_req: Request) => new Response(
