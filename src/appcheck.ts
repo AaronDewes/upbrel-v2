@@ -110,7 +110,7 @@ const overwriteRepos: Record<string, {
     repo: "lightning-shell",
   },
   "syncthing": {
-    owner: "sycthing",
+    owner: "syncthing",
     repo: "syncthing",
   },
   "electrs": {
