@@ -1,4 +1,3 @@
-
 import * as semver from "https://deno.land/x/semver@v1.4.1/mod.ts";
 import { Octokit } from "https://cdn.skypack.dev/octokit?dts";
 import checkHomeAssistant from "./special-apps/homeAssistant.ts";
@@ -22,8 +21,8 @@ function isPrerelease(version: string): boolean {
     version = version.substring(1);
   }
   let isPrerelease = semver.prerelease(version) !== null;
-  isPrerelease =
-    isPrerelease || version.includes("rc") || version.includes("beta");
+  isPrerelease = isPrerelease || version.includes("rc") ||
+    version.includes("beta");
   return isPrerelease;
 }
 
@@ -100,28 +99,64 @@ type FailedUpdate = {
   success: false;
 };
 
-
 // IDs of apps which don't have releases which aren't prerelease
-const appsInBeta: string[] = ["lightning-terminal"];
+const appsInBeta: string[] = ["lightning-terminal", "lightning"];
+const overwriteRepos: Record<string, {
+  owner: string;
+  repo: string;
+}> = {
+  "lightning-shell": {
+    owner: "ibz",
+    repo: "lightning-shell",
+  },
+  "syncthing": {
+    owner: "sycthing",
+    repo: "syncthing",
+  },
+  "electrs": {
+    owner: "romanz",
+    repo: "electrs",
+  },
+  "lightning": {
+    owner: "lightningnetwork",
+    repo: "lnd",
+  },
+};
 
-async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<AvailableUpdate | UpToDate | FailedUpdate> {
+async function getUpdatesForApp(
+  appDirName: string,
+  octokit: Octokit,
+): Promise<AvailableUpdate | UpToDate | FailedUpdate> {
   const appName = appDirName;
-  const response = await fetch(`https://raw.githubusercontent.com/getumbrel/umbrel-apps/master/${appName}/umbrel-app.yml`);
+  const response = await fetch(
+    `https://raw.githubusercontent.com/getumbrel/umbrel-apps/master/${appName}/umbrel-app.yml`,
+  );
   const app = YAML.parse(
     await response.text(),
   ) as UmbrelApp;
   const appVersion = app.version;
-  if (typeof app.repo !== "string" || !app.repo?.startsWith("https://github.com/")) {
-    return {
-      id: app.id,
-      app: app.name,
-      reason: "Repo is not a GitHub repository",
-      umbrel: appVersion.replace("v", ""),
-      success: false,
-    };
+  let repo: {
+    owner: string;
+    repo: string;
+  };
+  if (overwriteRepos[appName]) {
+    repo = overwriteRepos[appName];
+  } else {
+    if (
+      typeof app.repo !== "string" ||
+      !app.repo?.startsWith("https://github.com/")
+    ) {
+      return {
+        id: app.id,
+        app: app.name,
+        reason: "Repo is not a GitHub repository",
+        umbrel: appVersion.replace("v", ""),
+        success: false,
+      };
+    }
+    repo = getOwnerAndRepo(app.repo as string);
   }
-  const { owner, repo } = getOwnerAndRepo(app.repo as string);
-  if (!repo || !owner) {
+  if (!repo.repo || !repo.owner) {
     return {
       id: app.id,
       app: app.name,
@@ -132,16 +167,17 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<A
   }
   if (appName === "photoprism") {
     const tagList = await octokit.rest.repos.listTags({
-      owner,
-      repo,
+      ...repo,
     });
     // Tags are just dates as number
     // First, sort the tags by their number
-    const sortedTags = tagList.data.sort((a: { name: string }, b: { name: string }) => {
-      const aNum = parseInt(a.name);
-      const bNum = parseInt(b.name);
-      return aNum - bNum;
-    });
+    const sortedTags = tagList.data.sort(
+      (a: { name: string }, b: { name: string }) => {
+        const aNum = parseInt(a.name);
+        const bNum = parseInt(b.name);
+        return aNum - bNum;
+      },
+    );
     // Then, check if the highest number is higher than the number of the currently used version
     const highestNum = parseInt(sortedTags[sortedTags.length - 1].name);
     if (highestNum > parseInt(appVersion)) {
@@ -150,16 +186,16 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<A
         current: sortedTags[sortedTags.length - 1].name,
         app: app.name,
         id: appName,
-        success: true
+        success: true,
       };
     }
   } else if (appName === "home-assistant" || appName === "pi-hole") {
     const homeAssistantVersion = await checkHomeAssistant(
       octokit,
-      owner,
-      repo,
+      repo.owner,
+      repo.repo,
       app.version,
-      app.name
+      app.name,
     );
     if (homeAssistantVersion) {
       return { ...homeAssistantVersion, id: appName, success: true };
@@ -175,8 +211,7 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<A
       };
     }
     const tagList = await octokit.rest.repos.listTags({
-      owner,
-      repo,
+      ...repo,
     });
     // Remove all tags which aren't semver compatible or, then sort them by semver
     // Also remove all tags that contain a "-" and then letters at the end.
@@ -190,7 +225,7 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<A
       .sort((a: { name: string }, b: { name: string }) => {
         return semver.compare(
           a.name.replace("v", ""),
-          b.name.replace("v", "")
+          b.name.replace("v", ""),
         );
       });
     if (sortedTags.length == 0) {
@@ -206,7 +241,7 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<A
     if (
       semver.gt(
         sortedTags[sortedTags.length - 1].name.replace("v", ""),
-        app.version.replace("v", "")
+        app.version.replace("v", ""),
       )
     ) {
       return {
@@ -222,14 +257,14 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<A
     id: app.id,
     app: app.name,
     success: true,
-    umbrel: appVersion.replace("v", "")
+    umbrel: appVersion.replace("v", ""),
   };
 }
 
 type updateInfo = {
-	availableUpdates: AvailableUpdate[];
-	upToDate: UpToDate[];
-	failed: FailedUpdate[];
+  availableUpdates: AvailableUpdate[];
+  upToDate: UpToDate[];
+  failed: FailedUpdate[];
 };
 
 export async function getAppUpgrades(): Promise<updateInfo> {
@@ -242,7 +277,7 @@ export async function getAppUpgrades(): Promise<updateInfo> {
   const apps = (await octokit.rest.repos.getContent({
     repo: "umbrel-apps",
     owner: "getumbrel",
-    path: ""
+    path: "",
   })).data as ContentTree;
   const promises: Promise<AvailableUpdate | UpToDate | FailedUpdate>[] = [];
   for (const appDir of apps) {
@@ -253,9 +288,15 @@ export async function getAppUpgrades(): Promise<updateInfo> {
   }
   const data = await Promise.all(promises);
   // @ts-expect-error TypeScript doesn't understand this
-  const availableUpdates: AvailableUpdate[] = data.filter((version) => version.success && version.current !== version.umbrel);
+  const availableUpdates: AvailableUpdate[] = data.filter((version) =>
+    // @ts-expect-error TypeScript doesn't understand this
+    version.success && version.current !== version.umbrel
+  );
   // @ts-expect-error TypeScript doesn't understand this
-  const upToDate: UpToDate[] = data.filter((version) => version.success &&  version.current === version.umbrel);
+  const upToDate: UpToDate[] = data.filter((version) =>
+    // @ts-expect-error TypeScript doesn't understand this
+    version.success && version.current === version.umbrel
+  );
   // @ts-expect-error TypeScript doesn't understand this
   const failed: FailedUpdate[] = data.filter((version) => !version.success);
   return { availableUpdates, upToDate, failed };
