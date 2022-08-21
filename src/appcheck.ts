@@ -134,18 +134,7 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<V
       success: false,
     };
   }
-  if (appName === "lnbits") {
-    const currentCommit = await checkCommits(app.repo as string, octokit);
-    if (currentCommit !== app.version) {
-      return {
-        umbrel: appVersion,
-        current: currentCommit,
-        app: app.name,
-        id: appName,
-        success: true,
-      };
-    }
-  } else if (appName === "photoprism") {
+  if (appName === "photoprism") {
     const tagList = await octokit.rest.repos.listTags({
       owner,
       repo,
