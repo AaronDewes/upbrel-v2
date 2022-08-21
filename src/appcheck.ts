@@ -52,26 +52,6 @@ function getOwnerAndRepo(repository: string): {
   }
 }
 
-async function checkCommits(
-  repository: string,
-  octokit: Octokit
-): Promise<string> {
-  const { owner, repo } = getOwnerAndRepo(repository);
-
-  // Get the repos default branch
-  const repoInfo = await octokit.rest.repos.get({
-    owner,
-    repo,
-  });
-  // Get the latest commit from the repo
-  const appRepo = await octokit.rest.repos.getCommit({
-    owner,
-    repo,
-    ref: repoInfo.data.default_branch,
-  });
-  return appRepo.data.sha.substr(0, 7);
-}
-
 type ContentTree = {
   type: string;
   size: number;
@@ -97,18 +77,34 @@ type ContentTree = {
   };
 }[];
 
-interface VersionDiff {
+type AvailableUpdate = {
   app: string;
   id: string;
   umbrel: string;
   current: string;
-  success: boolean;
-}
+  success: true;
+};
+
+type UpToDate = {
+  app: string;
+  id: string;
+  umbrel: string;
+  success: true;
+};
+
+type FailedUpdate = {
+  app: string;
+  id: string;
+  umbrel: string;
+  reason: string;
+  success: false;
+};
+
 
 // IDs of apps which don't have releases which aren't prerelease
 const appsInBeta: string[] = ["lightning-terminal"];
 
-async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<VersionDiff> {
+async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<AvailableUpdate | UpToDate | FailedUpdate> {
   const appName = appDirName;
   const response = await fetch(`https://raw.githubusercontent.com/getumbrel/umbrel-apps/master/${appName}/umbrel-app.yml`);
   const app = YAML.parse(
@@ -119,7 +115,7 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<V
     return {
       id: app.id,
       app: app.name,
-      current: "unknown",
+      reason: "Repo is not a GitHub repository",
       umbrel: appVersion.replace("v", ""),
       success: false,
     };
@@ -129,7 +125,7 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<V
     return {
       id: app.id,
       app: app.name,
-      current: "unknown",
+      reason: "Failed to parse repository URL",
       umbrel: appVersion.replace("v", ""),
       success: false,
     };
@@ -174,7 +170,7 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<V
         id: app.id,
         app: app.name,
         umbrel: appVersion.replace("v", ""),
-        current: "unknown",
+        reason: "Invalid semver version",
         success: false,
       };
     }
@@ -202,7 +198,7 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<V
         id: app.id,
         app: app.name,
         umbrel: appVersion.replace("v", ""),
-        current: "unknown",
+        reason: "No tags found that are valid semvers",
         success: false,
       };
     }
@@ -226,28 +222,14 @@ async function getUpdatesForApp(appDirName: string, octokit: Octokit): Promise<V
     id: app.id,
     app: app.name,
     success: true,
-    umbrel: appVersion.replace("v", ""),
-    current: appVersion.replace("v", ""),
+    umbrel: appVersion.replace("v", "")
   };
 }
 
 type updateInfo = {
-	availableUpdates: {
-	  app: string;
-	  id: string;
-	  umbrel: string;
-	  current: string;
-	}[];
-	upToDate: {
-	  app: string;
-	  id: string;
-	  umbrel: string;
-	}[];
-	failed: {
-	  app: string;
-	  id: string;
-	  umbrel: string;
-	}[];
+	availableUpdates: AvailableUpdate[];
+	upToDate: UpToDate[];
+	failed: FailedUpdate[];
 };
 
 export async function getAppUpgrades(): Promise<updateInfo> {
@@ -262,11 +244,7 @@ export async function getAppUpgrades(): Promise<updateInfo> {
     owner: "getumbrel",
     path: ""
   })).data as ContentTree;
-  const promises: Promise<{
-    app: string;
-    id: string;
-    success: boolean;
-  } | VersionDiff>[] = [];
+  const promises: Promise<AvailableUpdate | UpToDate | FailedUpdate>[] = [];
   for (const appDir of apps) {
     if (appDir.type !== "dir") {
       continue;
@@ -274,8 +252,11 @@ export async function getAppUpgrades(): Promise<updateInfo> {
     promises.push(getUpdatesForApp(appDir.name, octokit));
   }
   const data = await Promise.all(promises);
-  const availableUpdates = data.filter((version) => version.current !== version.umbrel && version.success);
-  const upToDate = data.filter((version) => version.current === version.umbrel && version.success);
-  const failed = data.filter((version) => !version.success);
+  // @ts-expect-error TypeScript doesn't understand this
+  const availableUpdates: AvailableUpdate[] = data.filter((version) => version.success && version.current !== version.umbrel);
+  // @ts-expect-error TypeScript doesn't understand this
+  const upToDate: UpToDate[] = data.filter((version) => version.success &&  version.current === version.umbrel);
+  // @ts-expect-error TypeScript doesn't understand this
+  const failed: FailedUpdate[] = data.filter((version) => !version.success);
   return { availableUpdates, upToDate, failed };
 }
