@@ -281,7 +281,7 @@ async function getUpdatesForApp(
       semver.gt(
         overwriteLatestVersions[appName] ||
           sortedTags[sortedTags.length - 1].name.replace("v", ""),
-        app.version.replace("v", ""),
+        app.version.replace("v", "").name.split("-")[0],
       )
     ) {
       return {
