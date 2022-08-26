@@ -181,16 +181,14 @@ async function getUpdatesForApp(
     // First, sort the tags by their number
     const sortedTags = tagList.data.sort(
       (a: { name: string }, b: { name: string }) => {
-        const aNum = parseInt(a.name.split("-")[0]);
-        const bNum = parseInt(b.name.split("-")[0]);
+        const aNum = parseInt(a.name?.split("-")[0]);
+        const bNum = parseInt(b.name?.split("-")[0]);
         return aNum - bNum;
       },
     );
-    let latestTag = sortedTags[sortedTags.length - 1].name;
-    latestTag = latestTag.split("-")[0];
-    console.log(latestTag);
+    let latestTag = ;
     // Then, check if the highest number is higher than the number of the currently used version
-    const highestNum = parseInt(latestTag);
+    const highestNum = parseInt(sortedTags[sortedTags.length - 1].name.split("-")[0]);
     let currentVersion = parseInt(appVersion.split("-")[0]);
     currentVersion = currentVersion > 20000000 ? currentVersion - 20000000 : currentVersion;
     if (highestNum > currentVersion) {
@@ -284,7 +282,7 @@ async function getUpdatesForApp(
       semver.gt(
         overwriteLatestVersions[appName] ||
           sortedTags[sortedTags.length - 1].name.replace("v", ""),
-        app.version.replace("v", "").name.split("-")[0],
+        app.version.replace("v", "").split("-")[0],
       )
     ) {
       return {
