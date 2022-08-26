@@ -188,7 +188,7 @@ async function getUpdatesForApp(
     );
     // Then, check if the highest number is higher than the number of the currently used version
     const highestNum = parseInt(sortedTags[sortedTags.length - 1].name);
-    if (highestNum > parseInt(appVersion)) {
+    if (highestNum > parseInt(appVersion.split("-")[0])) {
       return {
         umbrel: appVersion,
         current: sortedTags[sortedTags.length - 1].name,
@@ -197,7 +197,7 @@ async function getUpdatesForApp(
         success: true,
       };
     }
-  } else if (appName === "home-assistant" || appName === "pi-hole") {
+  } else if (appName === "home-assistant" || appName === "pi-hole" || appName === "esphome") {
     const homeAssistantVersion = await checkHomeAssistant(
       octokit,
       repo.owner,

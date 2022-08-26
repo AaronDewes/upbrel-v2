@@ -21,9 +21,11 @@ serve(async (_req: Request) => {
   try {
     const cached = await cache.get("available_updates");
     if (!cached) {
+      console.debug("No cache found!");
       throw new Error("No cache");
     }
 
+    console.debug("Cached response!");
     return new Response(
       cached,
       {
