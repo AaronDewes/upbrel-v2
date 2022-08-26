@@ -186,9 +186,10 @@ async function getUpdatesForApp(
         return aNum - bNum;
       },
     );
-    console.log(sortedTags[sortedTags.length - 1].name);
+    const latestTag = sortedTags[sortedTags.length - 1].name;
+    console.log(latestTag);
     // Then, check if the highest number is higher than the number of the currently used version
-    const highestNum = parseInt(sortedTags[sortedTags.length - 1].name.split("-")[0]);
+    const highestNum = parseInt(latestTag.split("-")[0]);
     let currentVersion = parseInt(appVersion.split("-")[0]);
     currentVersion = currentVersion > 20000000 ? currentVersion - 20000000 : currentVersion;
     if (highestNum > currentVersion) {
