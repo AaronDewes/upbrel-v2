@@ -181,8 +181,8 @@ async function getUpdatesForApp(
     // First, sort the tags by their number
     const sortedTags = tagList.data.sort(
       (a: { name: string }, b: { name: string }) => {
-        const aNum = parseInt(a.name);
-        const bNum = parseInt(b.name);
+        const aNum = parseInt(a.name.split("-")[0]);
+        const bNum = parseInt(b.name.split("-")[0]);
         return aNum - bNum;
       },
     );
