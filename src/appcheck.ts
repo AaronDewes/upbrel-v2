@@ -186,7 +186,6 @@ async function getUpdatesForApp(
         return aNum - bNum;
       },
     );
-    let latestTag = ;
     // Then, check if the highest number is higher than the number of the currently used version
     const highestNum = parseInt(sortedTags[sortedTags.length - 1].name.split("-")[0]);
     let currentVersion = parseInt(appVersion.split("-")[0]);
