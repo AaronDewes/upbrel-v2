@@ -302,7 +302,7 @@ async function getUpdatesForApp(
   };
 }
 
-type updateInfo = {
+export type updateInfo = {
   availableUpdates: AvailableUpdate[];
   upToDate: UpToDate[];
   failed: FailedUpdate[];
