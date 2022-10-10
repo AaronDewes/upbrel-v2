@@ -1,4 +1,5 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
+import { Head } from "$fresh/runtime.ts";
 import { getAppUpgrades, updateInfo } from "../appcheck/appcheck.ts";
 import Counter from "../islands/Counter.tsx";
 interface MainData {
