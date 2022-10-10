@@ -1,5 +1,5 @@
 import { HandlerContext } from "$fresh/server.ts";
-import { getAppUpgrades } from "../../appcheck/index.ts";
+import { getAppUpgrades } from "../../../appcheck/index.ts";
 
 export const handler = async (
   _req: Request,
