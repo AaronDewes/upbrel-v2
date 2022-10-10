@@ -24,8 +24,21 @@ export const handler: Handlers<MainData> = {
   },
 };
 
+const TITLE = "Upbrel";
+const DESCRIPTION = "See how many apps on Umbrel are outdated and should be updated.";
+
+
 export default function MainPage(props: PageProps<MainData>) {
   return (
+    <>
+       <Head>
+        <title>{TITLE}</title>
+        <meta name="description" content={DESCRIPTION} />
+        <meta property="og:title" content={TITLE} />
+        <meta property="og:description" content={DESCRIPTION} />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://upbrel-og.vercel.app/percentage.png" />
+      </Head>
     <div>
       <main class="relative h-screen flex flex-col items-center justify-center">
         <h1 class="text-9xl">{props.data.percentageOutdated}%</h1>
@@ -35,5 +48,6 @@ export default function MainPage(props: PageProps<MainData>) {
         </a>
       </main>
     </div>
+      </>
   );
 }
