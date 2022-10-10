@@ -28,7 +28,7 @@ export default function MainPage(props: PageProps<MainData>) {
   return (
     <div>
       <main class="relative h-screen flex flex-col items-center justify-center">
-        <h1 class="text-6xl">{props.data.percentageOutdated}%</h1>
+        <h1 class="text-9xl">{props.data.percentageOutdated}%</h1>
         <p>of {props.data.amountOfApps} apps on Umbrel are outdated ({props.data.updateInfo.failed.length} not checked)</p>
         <a id="scrollTeaser" class="absolute bottom-6" href="#availableUpdates">
           <span></span>Scroll
