@@ -27,9 +27,9 @@ export const handler: Handlers<MainData> = {
 export default function MainPage(props: PageProps<MainData>) {
   return (
     <div>
-      <main class="relative h-full flex">
+      <main class="relative h-full flex flex-col items-center align-center">
         <h1 class="text-6xl">{props.data.percentageOutdated}%</h1>
-        <p>of {props.data.amountOfApps} apps</p>
+        <p>of {props.data.amountOfApps} apps on Umbrel are outdated ({props.data.updateInfo.failed.length} not checked)</p>
         <a id="scrollTeaser" class="" href="#availableUpdates">
           <span></span>Scroll
         </a>
