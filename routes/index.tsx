@@ -57,7 +57,7 @@ export default function MainPage(props: PageProps<MainData>) {
             <span></span>Scroll
           </a>
         </main>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {props.data.updateInfo.availableUpdates.map((app) =>
             <div class="flex flex-col h-44 items-center justify-center">
               <img
