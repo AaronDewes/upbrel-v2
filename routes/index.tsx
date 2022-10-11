@@ -58,8 +58,8 @@ export default function MainPage(props: PageProps<MainData>) {
             <span></span>Scroll
           </a>
         </main>
-        <div class="updateable">
-          {props.data.updateInfo.availableUpdates.map((app) => {
+        <div class="updatable">
+          {props.data.updateInfo.availableUpdates.map((app) =>
             <div class="card">
               <img
                 src={`https://getumbrel.github.io/umbrel-apps-gallery/${app.id}/icon.svg`}
@@ -69,8 +69,8 @@ export default function MainPage(props: PageProps<MainData>) {
                 Could be updated from <b>{app.umbrel}</b> to{" "}
                 <b>{app.current}</b>.
               </p>
-            </div>;
-          })}
+            </div>
+          )}
         </div>
       </div>
     </>
