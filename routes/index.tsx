@@ -26,29 +26,53 @@ export const handler: Handlers<MainData> = {
 };
 
 const TITLE = "Upbrel";
-const DESCRIPTION = "See how many apps on Umbrel are outdated and should be updated.";
-
+const DESCRIPTION =
+  "See how many apps on Umbrel are outdated and should be updated.";
 
 export default function MainPage(props: PageProps<MainData>) {
   return (
     <>
-       <Head>
+      <Head>
         <title>{TITLE}</title>
         <meta name="description" content={DESCRIPTION} />
         <meta property="og:title" content={TITLE} />
         <meta property="og:description" content={DESCRIPTION} />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content="https://upbrel-og.vercel.app/percentage.png" />
+        <meta
+          property="og:image"
+          content="https://upbrel-og.vercel.app/percentage.png"
+        />
       </Head>
-    <div>
-      <main class="relative h-screen flex flex-col items-center justify-center">
-        <h1 class="text-9xl">{props.data.percentageOutdated}%</h1>
-        <p>of {props.data.amountOfApps} apps on Umbrel are outdated ({props.data.updateInfo.failed.length} not checked)</p>
-        <a id="scrollTeaser" class="absolute bottom-6" href="#availableUpdates">
-          <span></span>Scroll
-        </a>
-      </main>
-    </div>
-      </>
+      <div>
+        <main class="relative h-screen flex flex-col items-center justify-center">
+          <h1 class="text-9xl">{props.data.percentageOutdated}%</h1>
+          <p>
+            of {props.data.amountOfApps} apps on Umbrel are outdated (
+            {props.data.updateInfo.failed.length} not checked)
+          </p>
+          <a
+            id="scrollTeaser"
+            class="absolute bottom-6"
+            href="#availableUpdates"
+          >
+            <span></span>Scroll
+          </a>
+        </main>
+        <div class="updateable">
+          {props.data.updateInfo.availableUpdates.map((app) => {
+            <div class="card">
+              <img
+                src={`https://getumbrel.github.io/umbrel-apps-gallery/${app.id}/icon.svg`}
+              />
+              <h2>{app.app}</h2>
+              <p>
+                Could be updated from <b>{app.umbrel}</b> to{" "}
+                <b>{app.current}</b>.
+              </p>
+            </div>;
+          })}
+        </div>
+      </div>
+    </>
   );
 }
