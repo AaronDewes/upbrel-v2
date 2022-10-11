@@ -52,13 +52,13 @@ export default function MainPage(props: PageProps<MainData>) {
           </p>
           <a
             id="scrollTeaser"
-            class="absolute bottom-12 pt-24"
+            class="absolute bottom-12 pt-20"
             href="#availableUpdates"
           >
             <span class="absolute top-0 left-1/2 w-6 h-6"></span>Scroll
           </a>
         </main>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="availableUpdates">
           {props.data.updateInfo.availableUpdates.map((app) =>
             <div class="flex flex-col h-44 items-center justify-center bg-slate-400 p-2">
               <img
