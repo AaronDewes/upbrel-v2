@@ -59,12 +59,12 @@ export default function MainPage(props: PageProps<MainData>) {
         </main>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {props.data.updateInfo.availableUpdates.map((app) =>
-            <div class="flex flex-col h-44">
+            <div class="flex flex-col h-44 items-center justify-center">
               <img
               class="h-16"
                 src={`https://getumbrel.github.io/umbrel-apps-gallery/${app.id}/icon.svg`}
               />
-              <h2>{app.app}</h2>
+              <h2 class="text-2xl font-bold">{app.app}</h2>
               <p>
                 Could be updated from <b>{app.umbrel}</b> to{" "}
                 <b>{app.current}</b>.
