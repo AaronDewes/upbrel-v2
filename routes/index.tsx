@@ -41,6 +41,7 @@ export default function MainPage(props: PageProps<MainData>) {
           property="og:image"
           content="https://upbrel-og.vercel.app/percentage.png"
         />
+        <link rel="stylesheet" href="/index.css" />
       </Head>
       <div>
         <main class="relative h-screen flex flex-col items-center justify-center">
@@ -54,14 +55,14 @@ export default function MainPage(props: PageProps<MainData>) {
             class="absolute bottom-6"
             href="#availableUpdates"
           >
-            <span></span>Scroll
+            <span class="absolute top-0 left-1/2 w-6 h-6"></span>Scroll
           </a>
         </main>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {props.data.updateInfo.availableUpdates.map((app) =>
             <div class="flex flex-col h-44 items-center justify-center bg-slate-400 p-2">
               <img
-              class="h-16 mb-4"
+              class="h-16 mb-4 rounded"
                 src={`https://getumbrel.github.io/umbrel-apps-gallery/${app.id}/icon.svg`}
               />
               <h2 class="text-2xl font-bold mb-4">{app.app}</h2>

@@ -1,0 +1,15 @@
+body {
+  background: url(https://unsplash.com/photos/JUFuI-kBtas/download?ixid=MnwxMjA3fDB8MXxhbGx8fHx8fHx8fHwxNjYxMDgyNDEy&force=true);
+  background-attachment: fixed;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+#scrollTeaser span {
+    margin-left: -12px;
+    border-left: 1px solid #fff;
+    border-bottom: 1px solid #fff;
+    transform: rotate(-45deg);
+    animation: arrow-move 1.5s infinite;
+    box-sizing: border-box;
+  }
