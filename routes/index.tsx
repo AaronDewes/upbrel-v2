@@ -59,7 +59,7 @@ export default function MainPage(props: PageProps<MainData>) {
         </main>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {props.data.updateInfo.availableUpdates.map((app) =>
-            <div class="flex flex-col h-44 items-center justify-center">
+            <div class="flex flex-col h-44 items-center justify-center bg-slate-400 p-2">
               <img
               class="h-16 mb-4"
                 src={`https://getumbrel.github.io/umbrel-apps-gallery/${app.id}/icon.svg`}
