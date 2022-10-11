@@ -52,7 +52,7 @@ export default function MainPage(props: PageProps<MainData>) {
           </p>
           <a
             id="scrollTeaser"
-            class="absolute bottom-6"
+            class="absolute bottom-12 pt-24"
             href="#availableUpdates"
           >
             <span class="absolute top-0 left-1/2 w-6 h-6"></span>Scroll
