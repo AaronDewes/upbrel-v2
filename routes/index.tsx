@@ -1,7 +1,6 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import { getAppUpgrades, updateInfo } from "../appcheck/appcheck.ts";
-import Counter from "../islands/Counter.tsx";
 interface MainData {
   updateInfo: updateInfo;
   amountOfApps: number;
@@ -58,9 +57,9 @@ export default function MainPage(props: PageProps<MainData>) {
             <span></span>Scroll
           </a>
         </main>
-        <div class="updatable">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {props.data.updateInfo.availableUpdates.map((app) =>
-            <div class="card">
+            <div class="flex flex-col h-44">
               <img
                 src={`https://getumbrel.github.io/umbrel-apps-gallery/${app.id}/icon.svg`}
               />
