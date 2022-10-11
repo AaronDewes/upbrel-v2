@@ -6,10 +6,26 @@ body {
 }
 
 #scrollTeaser span {
-    margin-left: -12px;
-    border-left: 1px solid #fff;
-    border-bottom: 1px solid #fff;
-    transform: rotate(-45deg);
-    animation: arrow-move 1.5s infinite;
-    box-sizing: border-box;
+  margin-left: -12px;
+  border-left: 1px solid #fff;
+  border-bottom: 1px solid #fff;
+  transform: rotate(-45deg);
+  animation: arrow-move 1.5s infinite;
+  box-sizing: border-box;
+}
+
+@keyframes arrow-move {
+  0% {
+    transform: rotate(-45deg) translate(0, 0);
+    opacity: 0;
   }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: rotate(-45deg) translate(-20px, 20px);
+    opacity: 0;
+  }
+}
