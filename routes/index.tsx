@@ -43,7 +43,7 @@ export default function MainPage(props: PageProps<MainData>) {
         />
         <link rel="stylesheet" href="/index.css" />
       </Head>
-      <div class="text-white">
+      <div class="text-white scroll-smooth">
         <main class="relative h-screen flex flex-col items-center justify-center">
           <h1 class="text-9xl">{props.data.percentageOutdated}%</h1>
           <p>
