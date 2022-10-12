@@ -30,3 +30,7 @@ body {
     opacity: 0;
   }
 }
+
+.transparent-card {
+  background-color: #5555554f;
+}
