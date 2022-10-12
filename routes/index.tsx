@@ -1,6 +1,7 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
-import { getAppUpgrades, updateInfo } from "../appcheck/appcheck.ts";
+import { getAppUpgrades } from "../appcheck/index.ts";
+import { updateInfo } from "../appcheck/appcheck.ts";
 interface MainData {
   updateInfo: updateInfo;
   amountOfApps: number;

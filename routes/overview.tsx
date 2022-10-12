@@ -1,11 +1,9 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import {
-  AvailableUpdate,
-  FailedUpdate,
   getAppUpgrades,
-  UpToDate,
-} from "../appcheck/appcheck.ts";
+} from "../appcheck/index.ts";
+import { AvailableUpdate,UpToDate,FailedUpdate } from "../appcheck/appcheck.ts";
 interface MainData {
   updateInfo: (AvailableUpdate | UpToDate | FailedUpdate)[];
   amountOfApps: number;
