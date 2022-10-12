@@ -58,9 +58,9 @@ export default function MainPage(props: PageProps<MainData>) {
             <span class="absolute top-0 left-1/2 w-6 h-6"></span>Scroll
           </a>
         </main>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 rounded" id="availableUpdates">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 rounded text-center" id="availableUpdates">
           {props.data.updateInfo.availableUpdates.map((app) =>
-            <div class="flex flex-col h-44 items-center justify-center bg-gray-400/25 py-2 transparent-card">
+            <div class="flex flex-col h-44 items-center justify-center bg-gray-400/25 py-3 transparent-card">
               <img
               class="h-16 mb-4 rounded"
                 src={`https://getumbrel.github.io/umbrel-apps-gallery/${app.id}/icon.svg`}

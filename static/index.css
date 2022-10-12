@@ -34,3 +34,7 @@ body {
 .transparent-card {
   background-color: #5555554f;
 }
+
+.rounded {
+  border-radius: .5rem;
+}
