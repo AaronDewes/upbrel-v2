@@ -28,9 +28,9 @@ export const handler: Handlers<MainData> = {
   },
 };
 
-const TITLE = "Upbrel";
+const TITLE = "Upbrel - Apps overview";
 const DESCRIPTION =
-  "See how many apps on Umbrel are outdated and should be updated.";
+  "See Umbrel's app store online and check what apps need updates.";
 
 export default function MainPage(props: PageProps<MainData>) {
   return (
@@ -49,21 +49,21 @@ export default function MainPage(props: PageProps<MainData>) {
       </Head>
       <div class="text-white">
         <main class="relative h-screen flex flex-col items-center justify-center">
-          <h1 class="text-9xl">{props.data.amountOfApps} apps</h1>
+          <h1 class="text-9xl">{props.data.amountOfApps}</h1>
           <p>
-            are available on Umbrel.
+            apps are available on Umbrel.
           </p>
           <a
             id="scrollTeaser"
             class="absolute bottom-12 pt-20"
-            href="#failedUpdates"
+            href="#availableApps"
           >
             <span class="absolute top-0 left-1/2 w-6 h-6"></span>Scroll
           </a>
         </main>
         <div
           class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 text-center mb-8 px-4"
-          id="failedUpdates"
+          id="availableApps"
         >
           {props.data.updateInfo.map((app) => (
             <div class="flex flex-col h-56 items-center justify-center bg-gray-400/25 py-3 transparent-card rounded">
@@ -89,7 +89,7 @@ export default function MainPage(props: PageProps<MainData>) {
                 )
                 : (
                   <p>
-                    No update available.
+                    No update available (<b>Version {app.umbrel}</b>).
                   </p>
                 )}
             </div>
