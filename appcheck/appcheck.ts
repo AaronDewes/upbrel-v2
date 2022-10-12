@@ -76,7 +76,7 @@ type ContentTree = {
   };
 }[];
 
-type AvailableUpdate = {
+export type AvailableUpdate = {
   app: string;
   id: string;
   umbrel: string;
@@ -84,14 +84,14 @@ type AvailableUpdate = {
   success: true;
 };
 
-type UpToDate = {
+export type UpToDate = {
   app: string;
   id: string;
   umbrel: string;
   success: true;
 };
 
-type FailedUpdate = {
+export type FailedUpdate = {
   app: string;
   id: string;
   umbrel: string;
