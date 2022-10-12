@@ -3,7 +3,6 @@ body {
   background-attachment: fixed;
   background-size: cover;
   background-repeat: no-repeat;
-  scroll-behavior: smooth;
 }
 
 #scrollTeaser span {
@@ -37,4 +36,8 @@ body {
 
 .rounded {
   border-radius: .5rem;
+}
+
+* {
+  scroll-behavior: smooth;
 }
