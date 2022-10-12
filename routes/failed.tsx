@@ -62,7 +62,7 @@ export default function MainPage(props: PageProps<MainData>) {
           id="failedUpdates"
         >
           {props.data.updateInfo.failed.map((app) => (
-            <div class="flex flex-col h-44 items-center justify-center bg-gray-400/25 py-3 transparent-card rounded">
+            <div class="flex flex-col h-56 items-center justify-center bg-gray-400/25 py-3 transparent-card rounded">
               <img
                 class="h-16 mb-4 rounded"
                 src={`https://getumbrel.github.io/umbrel-apps-gallery/${app.id}/icon.svg`}
@@ -70,8 +70,8 @@ export default function MainPage(props: PageProps<MainData>) {
               <h2 class="text-2xl font-bold mb-4">{app.app}</h2>
               <p>
                 Check failed.
-                <h5>Reason:</h5>
-                <b>{app.reason}</b>.
+                <h5 class="font-bold">Reason:</h5>
+                {app.reason}
               </p>
             </div>
           ))}
