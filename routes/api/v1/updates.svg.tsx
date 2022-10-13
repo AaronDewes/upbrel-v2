@@ -1,5 +1,5 @@
-import satori, { init } from "npm:satori/wasm";
-import initYoga from "npm:yoga-wasm-web";
+import satori, { init } from "https://esm.sh/satori@0.0.40/wasm";
+import initYoga from "https://esm.sh/yoga-wasm-web@0.1.2";
 import { HandlerContext } from "$fresh/server.ts";
 import { getAppUpgrades } from "../../../appcheck/index.ts";
 
