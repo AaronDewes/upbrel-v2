@@ -14,9 +14,6 @@ export const handler: Handlers<MainData> = {
     const data = await getAppUpgrades();
     const amountOfApps = data.availableUpdates.length + data.upToDate.length +
       data.failed.length;
-    const percentage = Math.round(
-      (data.failed.length / amountOfApps) * 100,
-    );
 
     return ctx.render({
       updateInfo: [...data.availableUpdates, ...data.upToDate, ...data.failed]
@@ -68,6 +65,7 @@ export default function MainPage(props: PageProps<MainData>) {
               <img
                 class="h-16 mb-4 rounded"
                 src={`https://getumbrel.github.io/umbrel-apps-gallery/${app.id}/icon.svg`}
+                alt={`${app.app} logo`}
               />
               <h2 class="text-2xl font-bold mb-4">{app.app}</h2>
               {app.reason
