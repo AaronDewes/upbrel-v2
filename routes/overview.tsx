@@ -70,23 +70,23 @@ export default function MainPage(props: PageProps<MainData>) {
               <h2 class="text-2xl font-bold mb-4">{app.app}</h2>
               {app.reason
                 ? (
-                  <p>
+                  <>
                     Check failed.
                     <h5 class="font-bold">Reason:</h5>
                     {app.reason}
-                  </p>
+                  </>
                 )
                 : app.current
                 ? (
-                  <p>
+                  <>
                     Could be updated from <b>{app.umbrel}</b> to{" "}
                     <b>{app.current}</b>.
-                  </p>
+                  </>
                 )
                 : (
-                  <p>
+                  <>
                     No update available (<b>Version {app.umbrel}</b>).
-                  </p>
+                  </>
                 )}
             </div>
           ))}
