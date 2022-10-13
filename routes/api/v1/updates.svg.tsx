@@ -28,6 +28,11 @@ export const handler = async (
           {data.failed.length} not checked)
         </p>
       </main>
-    )
+    ), 
+    {
+      headers: new Headers({
+        "content-type": "image/svg+xml"
+      }),
+    }
   );
 };
