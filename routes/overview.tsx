@@ -79,13 +79,13 @@ export default function MainPage(props: PageProps<MainData>) {
                 : app.current
                 ? (
                   <>
-                    Could be updated from <b>{app.umbrel}</b> to{" "}
-                    <b>{app.current}</b>.
+                    Could be updated from <b class="inline">{app.umbrel}</b> to{" "}
+                    <b class="inline">{app.current}</b>.
                   </>
                 )
                 : (
                   <>
-                    No update available (<b>Version {app.umbrel}</b>).
+                    No update available (<b class="inline">Version {app.umbrel}</b>).
                   </>
                 )}
             </div>
