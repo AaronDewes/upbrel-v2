@@ -1,4 +1,4 @@
-import {
+9import {
   getAppUpgrades as _checkUpdates,
   type updateInfo,
 } from "./appcheck.ts";
@@ -19,11 +19,11 @@ export async function getAppUpgrades(cached = true): Promise<updateInfo> {
       throw new Error("No cache");
     }
     const cachedData = await cache.get(["available_updates"]);
-    if (!cachedData) {
+    if (!cachedData?.value) {
       throw new Error("No cache");
     }
 
-    return cachedData;
+    return cachedData.value;
   } catch {
     const data = await _checkUpdates();
     await cache.set(["available_updates"], data, {
