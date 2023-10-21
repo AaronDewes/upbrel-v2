@@ -230,6 +230,14 @@ async function getUpdatesForApp(
         success: true,
       };
     }
+  } else if(app.id === "file-browser") {
+    return {
+        id: app.id,
+        app: app.name,
+        umbrel: appVersion.replace("v", ""),
+        reason: "Currently broken",
+        success: false,
+      };
   } else {
     if (!semver.valid(app.version)) {
       return {
