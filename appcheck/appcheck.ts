@@ -138,8 +138,9 @@ async function getUpdatesForApp(
   const response = await fetch(
     `https://raw.githubusercontent.com/getumbrel/umbrel-apps/master/${appName}/umbrel-app.yml`,
   );
+  let app;
   try {
-  const app = YAML.parse(
+  app = YAML.parse(
     await response.text(),
   ) as UmbrelApp;
   } catch {
