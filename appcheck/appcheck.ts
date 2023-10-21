@@ -1,5 +1,5 @@
 import * as semver from "https://deno.land/x/semver@v1.4.1/mod.ts";
-import { Octokit } from "https://cdn.skypack.dev/octokit?dts";
+import { Octokit } from "https://cdn.skypack.dev/octokit@^2?dts";
 import checkHomeAssistant from "./special-apps/homeAssistant.ts";
 import * as YAML from "https://deno.land/std@0.152.0/encoding/yaml.ts";
 import { UmbrelApp } from "./appYml.ts";
