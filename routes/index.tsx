@@ -46,6 +46,7 @@ export default function MainPage(props: PageProps<MainData>) {
       </Head>
       <div class="text-white">
         <main class="relative h-screen flex flex-col items-center justify-center">
+          <p>At least</p>
           <h1 class="text-9xl">{props.data.percentageOutdated}%</h1>
           <p>
             of {props.data.amountOfApps} apps on Umbrel are outdated (
