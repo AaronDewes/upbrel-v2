@@ -153,6 +153,15 @@ async function getUpdatesForApp(
       };
   }
   const appVersion = app.version;
+  if(!appVersion) {
+    return {
+        id: appName,
+        app: appName,
+        umbrel: "Unknown",
+        reason: "No version set!",
+        success: false,
+      };
+  };
   let repo: {
     owner: string;
     repo: string;
