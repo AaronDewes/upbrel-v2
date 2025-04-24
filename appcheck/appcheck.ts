@@ -127,7 +127,7 @@ const overwriteRepos: Record<string, {
   },
 };
 const overwriteLatestVersions: Record<string, string> = {
-  "snowflake": "2.3.0",
+  "snowflake": "2.3.0"
 };
 
 async function getUpdatesForApp(
@@ -162,6 +162,15 @@ async function getUpdatesForApp(
         success: false,
       };
   };
+  // Don't check for updates for disabled apps
+  if (app.disabled) {
+    return {
+        id: appName,
+        app: appName,
+        umbrel: appVersion,
+        success: true,
+      };
+  }
   let repo: {
     owner: string;
     repo: string;
